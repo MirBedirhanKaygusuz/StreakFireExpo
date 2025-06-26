@@ -11,7 +11,7 @@ export interface Habit {
   currentStreak: number;
   longestStreak: number;
   lastCompletedDate?: string;
-  createdAt: Date;
+  createdAt: string;
   isActive: boolean;
   color: string;
   reminderTime?: string;
@@ -61,7 +61,7 @@ export const fetchHabits = createAsyncThunk(
         currentStreak: 5,
         longestStreak: 12,
         isActive: true,
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
       },
       {
         id: '2',
@@ -75,7 +75,7 @@ export const fetchHabits = createAsyncThunk(
         currentStreak: 3,
         longestStreak: 8,
         isActive: true,
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
       },
     ];
     
@@ -97,7 +97,7 @@ export const createHabit = createAsyncThunk(
       userId,
       currentStreak: 0,
       longestStreak: 0,
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
       isActive: true,
     };
     

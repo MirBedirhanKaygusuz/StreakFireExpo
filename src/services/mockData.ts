@@ -16,7 +16,7 @@ let mockPosts: Post[] = [
     habitName: 'Morning Exercise',
     likes: [],
     comments: [],
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
   },
   {
     id: '2',
@@ -28,7 +28,7 @@ let mockPosts: Post[] = [
     streakCount: 10,
     likes: ['mock-user-id'],
     comments: [],
-    createdAt: new Date(Date.now() - 3600000), // 1 hour ago
+    createdAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
   }
 ];
 
@@ -45,7 +45,7 @@ let mockGroups: Group[] = [
         userId: 'mock-user-id',
         userName: 'Mock User',
         userAvatar: 'https://via.placeholder.com/40',
-        joinedAt: new Date(Date.now() - 86400000), // 1 day ago
+        joinedAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
         completionRate: 90,
         isAdmin: true,
       }
@@ -53,7 +53,7 @@ let mockGroups: Group[] = [
     currentStreak: 5,
     longestStreak: 15,
     lastCompletedDate: new Date().toISOString().split('T')[0],
-    createdAt: new Date(Date.now() - 86400000 * 7), // 1 week ago
+    createdAt: new Date(Date.now() - 86400000 * 7).toISOString(), // 1 week ago
     isActive: true,
     streakProtectionsUsed: 1,
   }
@@ -80,7 +80,7 @@ export const mockCreatePost = async (postData: Omit<Post, 'id' | 'likes' | 'comm
     ...postData,
     likes: [],
     comments: [],
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
   };
   
   mockPosts.unshift(newPost);
@@ -109,7 +109,7 @@ export const mockAddComment = async (postId: string, content: string, user: any)
     userName: user.displayName,
     userAvatar: user.photoURL,
     content,
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
   };
   
   const post = mockPosts.find(p => p.id === postId);
@@ -133,7 +133,7 @@ export const mockCreateGroup = async (groupData: any, user: any) => {
     userId: user.id,
     userName: user.displayName,
     userAvatar: user.photoURL,
-    joinedAt: new Date(),
+    joinedAt: new Date().toISOString(),
     completionRate: 0,
     isAdmin: true,
   };
@@ -145,7 +145,7 @@ export const mockCreateGroup = async (groupData: any, user: any) => {
     members: [creator],
     currentStreak: 0,
     longestStreak: 0,
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     isActive: true,
     streakProtectionsUsed: 0,
   };
@@ -166,7 +166,7 @@ export const mockInviteToGroup = async (groupId: string, invitedUserId: string, 
     inviterName: user.displayName,
     invitedUserId,
     status: 'pending',
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
   };
   
   mockInvites.push(invite);
@@ -186,7 +186,7 @@ export const mockRespondToInvite = async (inviteId: string, accept: boolean, use
         userId: user.id,
         userName: user.displayName,
         userAvatar: user.photoURL,
-        joinedAt: new Date(),
+        joinedAt: new Date().toISOString(),
         completionRate: 0,
         isAdmin: false,
       };

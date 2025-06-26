@@ -19,7 +19,7 @@ export interface Group {
   currentStreak: number;
   longestStreak: number;
   lastCompletedDate?: string;
-  createdAt: Date;
+  createdAt: string;
   isActive: boolean;
   streakProtectionsUsed: number;
 }
@@ -28,7 +28,7 @@ export interface GroupMember {
   userId: string;
   userName: string;
   userAvatar?: string;
-  joinedAt: Date;
+  joinedAt: string;
   completionRate: number;
   lastCompleted?: string;
   isAdmin: boolean;
@@ -42,7 +42,7 @@ export interface GroupInvite {
   inviterName: string;
   invitedUserId: string;
   status: 'pending' | 'accepted' | 'declined';
-  createdAt: Date;
+  createdAt: string;
 }
 
 interface GroupsState {

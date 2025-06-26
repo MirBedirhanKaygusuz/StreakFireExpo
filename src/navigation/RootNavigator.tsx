@@ -3,6 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSelector } from 'react-redux';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { RootState } from '../store/store';
 
 // Auth Screens
@@ -56,7 +57,8 @@ const MainTabs: React.FC = () => {
   const unreadCount = useSelector((state: RootState) => state.notifications.unreadCount);
 
   return (
-    <Tab.Navigator
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: string;
@@ -89,10 +91,12 @@ const MainTabs: React.FC = () => {
           backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
           borderTopColor: '#E0E0E0',
-          paddingBottom: 5,
+          paddingBottom: 10,
           paddingTop: 5,
-          height: 60,
+          paddingHorizontal: 10,
+          height: 50,
         },
+        headerShown: false,
         headerStyle: {
           backgroundColor: '#FF6B6B',
         },
@@ -106,7 +110,7 @@ const MainTabs: React.FC = () => {
         name="Home" 
         component={HomeScreen}
         options={{
-          title: 'Dashboard',
+          title: 'Home',
         }}
       />
       <Tab.Screen 
@@ -138,7 +142,8 @@ const MainTabs: React.FC = () => {
           title: 'Profile',
         }}
       />
-    </Tab.Navigator>
+      </Tab.Navigator>
+    </SafeAreaView>
   );
 };
 

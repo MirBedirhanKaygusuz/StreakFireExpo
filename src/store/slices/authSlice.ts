@@ -9,8 +9,9 @@ interface User {
   isPremium: boolean;
   streakProtections: number;
   referralCode: string;
-  createdAt: Date;
+  createdAt: string; 
 }
+
 
 interface AuthState {
   user: User | null;
@@ -35,7 +36,7 @@ export const signUp = createAsyncThunk(
       isPremium: false,
       streakProtections: 3,
       referralCode: generateReferralCode(),
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     };
     
     await AsyncStorage.setItem('userId', userData.id);
@@ -54,7 +55,7 @@ export const signIn = createAsyncThunk(
       isPremium: false,
       streakProtections: 3,
       referralCode: generateReferralCode(),
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     };
     
     await AsyncStorage.setItem('userId', userData.id);

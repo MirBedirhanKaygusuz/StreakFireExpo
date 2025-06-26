@@ -19,7 +19,7 @@ export interface Post {
   streakCount?: number;
   likes: string[]; // Array of user IDs who liked
   comments: Comment[];
-  createdAt: Date;
+  createdAt: string;
 }
 
 export interface Comment {
@@ -28,7 +28,7 @@ export interface Comment {
   userName: string;
   userAvatar?: string;
   content: string;
-  createdAt: Date;
+  createdAt: string;
 }
 
 interface SocialState {

@@ -1,12 +1,12 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import * as Notifications from 'expo-notifications';
-import { 
-  scheduleStreakReminder as scheduleNotification,
-  cancelStreakReminder as cancelNotification,
-  requestNotificationPermissions,
-  sendLocalNotification
-} from '../../services/notifications';
+// import { 
+//   scheduleStreakReminder as scheduleNotification,
+//   cancelStreakReminder as cancelNotification,
+//   requestNotificationPermissions,
+//   sendLocalNotification
+// } from '../../services/notifications';
 
 export interface Notification {
   id: string;
@@ -16,7 +16,7 @@ export interface Notification {
   body: string;
   data?: any;
   read: boolean;
-  createdAt: Date;
+  createdAt: string;
 }
 
 interface NotificationsState {
@@ -44,7 +44,7 @@ let mockNotifications: Notification[] = [
     title: 'Streak Reminder! 🔥',
     body: 'Don\'t forget to complete your morning exercise!',
     read: false,
-    createdAt: new Date(Date.now() - 3600000), // 1 hour ago
+    createdAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago - string olarak
   },
   {
     id: '2',
@@ -53,7 +53,7 @@ let mockNotifications: Notification[] = [
     title: 'Milestone Achieved! 🎉',
     body: 'You\'ve reached a 7-day streak!',
     read: true,
-    createdAt: new Date(Date.now() - 86400000), // 1 day ago
+    createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago - string olarak
   },
 ];
 
@@ -102,21 +102,21 @@ export const markAllAsRead = createAsyncThunk(
   }
 );
 
-export const scheduleStreakReminder = createAsyncThunk(
-  'notifications/scheduleStreakReminder',
-  async ({ habitId, habitName, time }: { habitId: string; habitName: string; time: Date }) => {
-    await scheduleNotification(habitId, habitName, time);
-    return { habitId, time };
-  }
-);
+// export const scheduleStreakReminder = createAsyncThunk(
+//   'notifications/scheduleStreakReminder',
+//   async ({ habitId, habitName, time }: { habitId: string; habitName: string; time: Date }) => {
+//     await scheduleNotification(habitId, habitName, time);
+//     return { habitId, time };
+//   }
+// );
 
-export const cancelStreakReminder = createAsyncThunk(
-  'notifications/cancelStreakReminder',
-  async (habitId: string) => {
-    await cancelNotification(habitId);
-    return habitId;
-  }
-);
+// export const cancelStreakReminder = createAsyncThunk(
+//   'notifications/cancelStreakReminder',
+//   async (habitId: string) => {
+//     await cancelNotification(habitId);
+//     return habitId;
+//   }
+// );
 
 const notificationsSlice = createSlice({
   name: 'notifications',
