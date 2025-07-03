@@ -14,7 +14,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { RootState, AppDispatch } from '../../store/store';
 import { fetchHabits } from '../../store/slices/habitsSlice';
-import { fetchGroups } from '../../store/slices/groupsSlice';
 import { fetchNotifications } from '../../store/slices/notificationsSlice';
 import StreakCard from '../../components/StreakCard';
 import QuickStats from '../../components/QuickStats';
@@ -27,7 +26,6 @@ const HomeScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { habits } = useSelector((state: RootState) => state.habits);
-  const { groups } = useSelector((state: RootState) => state.groups);
   const { unreadCount } = useSelector((state: RootState) => state.notifications);
   
   const [refreshing, setRefreshing] = useState(false);
@@ -42,7 +40,6 @@ const HomeScreen: React.FC = () => {
     try {
       await Promise.all([
         dispatch(fetchHabits()),
-        dispatch(fetchGroups()),
         dispatch(fetchNotifications()),
       ]);
     } catch (error) {
@@ -150,49 +147,7 @@ const HomeScreen: React.FC = () => {
           )}
         </View>
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Active Groups</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Groups')}>
-              <Text style={styles.seeAll}>See All</Text>
-            </TouchableOpacity>
-          </View>
-          {groups.slice(0, 2).map(group => (
-            <TouchableOpacity
-              key={group.id}
-              style={styles.groupCard}
-              onPress={() => navigation.navigate('GroupDetail', { groupId: group.id })}
-            >
-              <View style={styles.groupInfo}>
-                <MaterialCommunityIcons name="account-group" size={24} color="#FF6B6B" />
-                <View style={styles.groupText}>
-                  <Text style={styles.groupName}>{group.name}</Text>
-                  <Text style={styles.groupMembers}>{group.members.length} members</Text>
-                </View>
-              </View>
-              <View style={styles.groupStreak}>
-                <MaterialCommunityIcons name="fire" size={20} color="#FF6B6B" />
-                <Text style={styles.groupStreakText}>{group.currentStreak}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-
         <QuickStats />
-
-        <TouchableOpacity
-          style={styles.leaderboardButton}
-          onPress={() => navigation.navigate('Leaderboard', { type: 'global' })}
-        >
-          <LinearGradient
-            colors={['#667EEA', '#764BA2']}
-            style={styles.leaderboardGradient}
-          >
-            <MaterialCommunityIcons name="trophy" size={24} color="#FFFFFF" />
-            <Text style={styles.leaderboardText}>View Global Leaderboard</Text>
-            <MaterialCommunityIcons name="chevron-right" size={24} color="#FFFFFF" />
-          </LinearGradient>
-        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -311,68 +266,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     marginTop: 10,
-  },
-  groupCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 15,
-    padding: 15,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  groupInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  groupText: {
-    marginLeft: 15,
-  },
-  groupName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  groupMembers: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
-  },
-  groupStreak: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  groupStreakText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FF6B6B',
-    marginLeft: 5,
-  },
-  leaderboardButton: {
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  leaderboardGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-    borderRadius: 15,
-  },
-  leaderboardText: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginLeft: 15,
   },
 });
 

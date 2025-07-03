@@ -10,7 +10,6 @@ import { RootState } from '../store/store';
 
 const QuickStats: React.FC = () => {
   const { habits } = useSelector((state: RootState) => state.habits);
-  const { groups } = useSelector((state: RootState) => state.groups);
   const { user } = useSelector((state: RootState) => state.auth);
 
   // Calculate statistics
@@ -26,7 +25,9 @@ const QuickStats: React.FC = () => {
     Math.max(max, habit.longestStreak), 0
   );
   
-  const totalGroups = groups.length;
+  const totalStreakDays = habits.reduce((sum, habit) => 
+    sum + habit.currentStreak, 0
+  );
 
   const stats = [
     {
@@ -48,10 +49,10 @@ const QuickStats: React.FC = () => {
       color: '#2196F3',
     },
     {
-      icon: 'account-group',
-      value: totalGroups.toString(),
-      label: 'Active Groups',
-      color: '#9C27B0',
+      icon: 'fire',
+      value: totalStreakDays.toString(),
+      label: 'Total Streak Days',
+      color: '#FF6B6B',
     },
   ];
 
