@@ -22,6 +22,7 @@ const ProfileScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { habits } = useSelector((state: RootState) => state.habits);
+  const { groups } = useSelector((state: RootState) => state.groups);
   const { pushEnabled } = useSelector((state: RootState) => state.notifications);
   
   const [notificationsEnabled, setNotificationsEnabled] = useState(pushEnabled);
@@ -82,9 +83,9 @@ const ProfileScreen: React.FC = () => {
       color: '#4CAF50',
     },
     {
-      icon: 'calendar-check',
-      label: 'Completed Today',
-      value: completedToday.toString(),
+      icon: 'account-group',
+      label: 'Groups Joined',
+      value: groups.length.toString(),
       color: '#2196F3',
     },
   ];

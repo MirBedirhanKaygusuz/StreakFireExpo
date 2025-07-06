@@ -14,6 +14,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { RootState, AppDispatch } from '../../store/store';
 import { fetchHabits, completeHabit, deleteHabit } from '../../store/slices/habitsSlice';
 import StreakCard from '../../components/StreakCard';
+import { createPost } from '../../store/slices/socialSlice';
 
 const HabitsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -45,14 +46,35 @@ const HabitsScreen: React.FC = () => {
           `Amazing! You've maintained "${habit.title}" for ${habit.currentStreak} days!`,
           [
             {
-              text: 'Great!',
-              style: 'default',
+              text: 'Share',
+              onPress: () => shareAchievement(habit),
+            },
+            {
+              text: 'Thanks!',
+              style: 'cancel',
             },
           ]
         );
       }
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to complete habit');
+    }
+  };
+
+  const shareAchievement = async (habit: any) => {
+    try {
+      await dispatch(createPost({
+        content: `Just hit a ${habit.currentStreak}-day streak with "${habit.title}"! 🔥`,
+        type: 'streak_milestone',
+        habitId: habit.id,
+        habitName: habit.title,
+        streakCount: habit.currentStreak,
+        userId: '',
+        userName: '',
+      }));
+      Alert.alert('Success', 'Achievement shared with the community!');
+    } catch (error) {
+      console.error('Error sharing achievement:', error);
     }
   };
 

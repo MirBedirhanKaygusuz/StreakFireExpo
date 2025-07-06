@@ -21,15 +21,8 @@ export interface HabitCompletion {
   id: string;
   habitId: string;
   userId: string;
-  completedAt: string; // ISO date string (YYYY-MM-DD)
+  completedAt: Date;
   notes?: string;
-}
-
-export interface HabitCalendarData {
-  date: string; // YYYY-MM-DD format
-  completedHabits: string[]; // Array of habit IDs
-  totalHabits: number;
-  completionRate: number;
 }
 
 interface HabitsState {
@@ -38,33 +31,6 @@ interface HabitsState {
   isLoading: boolean;
   error: string | null;
 }
-
-// Helper function to generate mock completion data for the last 30 days
-const generateMockCompletions = (habits: Habit[], userId: string): HabitCompletion[] => {
-  const completions: HabitCompletion[] = [];
-  const today = new Date();
-  
-  // Generate completions for the last 30 days
-  for (let i = 0; i < 30; i++) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-    const dateString = date.toISOString().split('T')[0];
-    
-    habits.forEach(habit => {
-      // Random completion (70% chance for each habit each day)
-      if (Math.random() > 0.3) {
-        completions.push({
-          id: `${habit.id}-${dateString}`,
-          habitId: habit.id,
-          userId,
-          completedAt: dateString,
-        });
-      }
-    });
-  }
-  
-  return completions;
-};
 
 const initialState: HabitsState = {
   habits: [],
@@ -95,7 +61,7 @@ export const fetchHabits = createAsyncThunk(
         currentStreak: 5,
         longestStreak: 12,
         isActive: true,
-        createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), // 15 days ago
+        createdAt: new Date().toISOString(),
       },
       {
         id: '2',
@@ -109,42 +75,11 @@ export const fetchHabits = createAsyncThunk(
         currentStreak: 3,
         longestStreak: 8,
         isActive: true,
-        createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), // 10 days ago
-      },
-      {
-        id: '3',
-        userId,
-        title: 'Meditation',
-        description: 'Practice mindfulness for 10 minutes',
-        color: '#45B7D1',
-        targetFrequency: 'daily',
-        reminderTime: '06:30',
-        category: 'mindfulness',
-        currentStreak: 7,
-        longestStreak: 15,
-        isActive: true,
-        createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(), // 20 days ago
-      },
-      {
-        id: '4',
-        userId,
-        title: 'Drink Water',
-        description: 'Drink 8 glasses of water daily',
-        color: '#96CEB4',
-        targetFrequency: 'daily',
-        reminderTime: '08:00',
-        category: 'health',
-        currentStreak: 2,
-        longestStreak: 6,
-        isActive: true,
-        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
+        createdAt: new Date().toISOString(),
       },
     ];
     
-    // Generate mock completion data
-    const mockCompletions = generateMockCompletions(mockHabits, userId);
-    
-    return { habits: mockHabits, completions: mockCompletions };
+    return mockHabits;
   }
 );
 
@@ -206,7 +141,7 @@ export const completeHabit = createAsyncThunk(
       id: Date.now().toString(),
       habitId,
       userId,
-      completedAt: today,
+      completedAt: new Date(),
       notes,
     };
     
@@ -250,8 +185,7 @@ const habitsSlice = createSlice({
       })
       .addCase(fetchHabits.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.habits = action.payload.habits;
-        state.completions = action.payload.completions;
+        state.habits = action.payload;
       })
       .addCase(fetchHabits.rejected, (state, action) => {
         state.isLoading = false;

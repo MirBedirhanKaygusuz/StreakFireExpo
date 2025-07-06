@@ -14,13 +14,17 @@ import OnboardingScreen from '../screens/auth/OnboardingScreen';
 // Main Screens
 import HomeScreen from '../screens/main/HomeScreen';
 import HabitsScreen from '../screens/main/HabitsScreen';
-import CalendarScreen from '../screens/main/CalendarScreen';
+import SocialScreen from '../screens/main/SocialScreen';
+import GroupsScreen from '../screens/main/GroupsScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
 
 // Detail Screens
 import HabitDetailScreen from '../screens/details/HabitDetailScreen';
+import GroupDetailScreen from '../screens/details/GroupDetailScreen';
 import CreateHabitScreen from '../screens/details/CreateHabitScreen';
+import CreateGroupScreen from '../screens/details/CreateGroupScreen';
 import NotificationsScreen from '../screens/details/NotificationsScreen';
+import LeaderboardScreen from '../screens/details/LeaderboardScreen';
 import SettingsScreen from '../screens/details/SettingsScreen';
 
 export type RootStackParamList = {
@@ -30,15 +34,19 @@ export type RootStackParamList = {
   SignUp: undefined;
   Onboarding: undefined;
   HabitDetail: { habitId: string };
+  GroupDetail: { groupId: string };
   CreateHabit: undefined;
+  CreateGroup: { habitId?: string };
   Notifications: undefined;
+  Leaderboard: { type: 'global' | 'group'; groupId?: string };
   Settings: undefined;
 };
 
 export type MainTabParamList = {
   Home: undefined;
   Habits: undefined;
-  Calendar: undefined;
+  Social: undefined;
+  Groups: undefined;
   Profile: undefined;
 };
 
@@ -46,6 +54,8 @@ const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 const MainTabs: React.FC = () => {
+  const unreadCount = useSelector((state: RootState) => state.notifications.unreadCount);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <Tab.Navigator
@@ -60,8 +70,11 @@ const MainTabs: React.FC = () => {
             case 'Habits':
               iconName = focused ? 'checkbox-marked-circle' : 'checkbox-marked-circle-outline';
               break;
-            case 'Calendar':
-              iconName = focused ? 'calendar' : 'calendar-outline';
+            case 'Social':
+              iconName = focused ? 'account-group' : 'account-group-outline';
+              break;
+            case 'Groups':
+              iconName = focused ? 'google-circles-communities' : 'google-circles-group';
               break;
             case 'Profile':
               iconName = focused ? 'account' : 'account-outline';
@@ -108,10 +121,18 @@ const MainTabs: React.FC = () => {
         }}
       />
       <Tab.Screen 
-        name="Calendar" 
-        component={CalendarScreen}
+        name="Social" 
+        component={SocialScreen}
         options={{
-          title: 'Calendar',
+          title: 'Feed',
+          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+        }}
+      />
+      <Tab.Screen 
+        name="Groups" 
+        component={GroupsScreen}
+        options={{
+          title: 'Groups',
         }}
       />
       <Tab.Screen 
@@ -154,14 +175,29 @@ const RootNavigator: React.FC = () => {
             options={{ title: 'Habit Details' }}
           />
           <Stack.Screen 
+            name="GroupDetail" 
+            component={GroupDetailScreen}
+            options={{ title: 'Group Details' }}
+          />
+          <Stack.Screen 
             name="CreateHabit" 
             component={CreateHabitScreen}
             options={{ title: 'Create New Habit' }}
           />
           <Stack.Screen 
+            name="CreateGroup" 
+            component={CreateGroupScreen}
+            options={{ title: 'Create New Group' }}
+          />
+          <Stack.Screen 
             name="Notifications" 
             component={NotificationsScreen}
             options={{ title: 'Notifications' }}
+          />
+          <Stack.Screen 
+            name="Leaderboard" 
+            component={LeaderboardScreen}
+            options={{ title: 'Leaderboard' }}
           />
           <Stack.Screen 
             name="Settings" 
