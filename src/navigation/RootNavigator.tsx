@@ -2,9 +2,12 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSelector } from 'react-redux';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { RootState } from '../store/store';
+import CustomTabBar from '../components/CustomTabBar';
+import IOSCustomTabBar from '../components/IOSCustomTabBar';
 
 // Auth Screens
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -53,98 +56,129 @@ export type MainTabParamList = {
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const MainTabs: React.FC = () => {
+// iOS için özelleştirilmiş tab navigator
+const IOSMainTabs: React.FC = () => {
   const unreadCount = useSelector((state: RootState) => state.notifications.unreadCount);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
-      <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName: string;
-
-          switch (route.name) {
-            case 'Home':
-              iconName = focused ? 'home' : 'home-outline';
-              break;
-            case 'Habits':
-              iconName = focused ? 'checkbox-marked-circle' : 'checkbox-marked-circle-outline';
-              break;
-            case 'Social':
-              iconName = focused ? 'account-group' : 'account-group-outline';
-              break;
-            case 'Groups':
-              iconName = focused ? 'google-circles-communities' : 'google-circles-group';
-              break;
-            case 'Profile':
-              iconName = focused ? 'account' : 'account-outline';
-              break;
-            default:
-              iconName = 'circle';
-          }
-
-          return <MaterialCommunityIcons name={iconName as any} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: '#FF6B6B',
-        tabBarInactiveTintColor: 'gray',
-        tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopWidth: 1,
-          borderTopColor: '#E0E0E0',
-          paddingBottom: 10,
-          paddingTop: 5,
-          paddingHorizontal: 10,
-          height: 50,
-        },
-        headerShown: false,
-        headerStyle: {
-          backgroundColor: '#FF6B6B',
-        },
-        headerTintColor: '#FFFFFF',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
-      })}
+    <SafeAreaView 
+      style={{ 
+        flex: 1, 
+        backgroundColor: '#FFFFFF'
+      }}
+      edges={['top', 'left', 'right']}
     >
-      <Tab.Screen 
-        name="Home" 
-        component={HomeScreen}
-        options={{
-          title: 'Home',
+      <ExpoStatusBar style="dark" />
+      <Tab.Navigator
+        tabBar={props => <IOSCustomTabBar {...props} />}
+        screenOptions={{
+          headerShown: false,
         }}
-      />
-      <Tab.Screen 
-        name="Habits" 
-        component={HabitsScreen}
-        options={{
-          title: 'My Habits',
-        }}
-      />
-      <Tab.Screen 
-        name="Social" 
-        component={SocialScreen}
-        options={{
-          title: 'Feed',
-          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
-        }}
-      />
-      <Tab.Screen 
-        name="Groups" 
-        component={GroupsScreen}
-        options={{
-          title: 'Groups',
-        }}
-      />
-      <Tab.Screen 
-        name="Profile" 
-        component={ProfileScreen}
-        options={{
-          title: 'Profile',
-        }}
-      />
+      >
+        <Tab.Screen 
+          name="Home" 
+          component={HomeScreen}
+          options={{
+            title: 'Home',
+          }}
+        />
+        <Tab.Screen 
+          name="Habits" 
+          component={HabitsScreen}
+          options={{
+            title: 'Habits',
+          }}
+        />
+        <Tab.Screen 
+          name="Social" 
+          component={SocialScreen}
+          options={{
+            title: 'Feed',
+            tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+          }}
+        />
+        <Tab.Screen 
+          name="Groups" 
+          component={GroupsScreen}
+          options={{
+            title: 'Groups',
+          }}
+        />
+        <Tab.Screen 
+          name="Profile" 
+          component={ProfileScreen}
+          options={{
+            title: 'Profile',
+          }}
+        />
       </Tab.Navigator>
     </SafeAreaView>
   );
+};
+
+// Android için özelleştirilmiş tab navigator
+const AndroidMainTabs: React.FC = () => {
+  const unreadCount = useSelector((state: RootState) => state.notifications.unreadCount);
+
+  return (
+    <SafeAreaView 
+      style={{ 
+        flex: 1, 
+        backgroundColor: '#FFFFFF'
+      }}
+      edges={['top', 'left', 'right']}
+    >
+      <ExpoStatusBar style="dark" />
+      <Tab.Navigator
+        tabBar={props => <CustomTabBar {...props} />}
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Tab.Screen 
+          name="Home" 
+          component={HomeScreen}
+          options={{
+            title: 'Home',
+          }}
+        />
+        <Tab.Screen 
+          name="Habits" 
+          component={HabitsScreen}
+          options={{
+            title: 'Habits',
+          }}
+        />
+        <Tab.Screen 
+          name="Social" 
+          component={SocialScreen}
+          options={{
+            title: 'Feed',
+            tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+          }}
+        />
+        <Tab.Screen 
+          name="Groups" 
+          component={GroupsScreen}
+          options={{
+            title: 'Groups',
+          }}
+        />
+        <Tab.Screen 
+          name="Profile" 
+          component={ProfileScreen}
+          options={{
+            title: 'Profile',
+          }}
+        />
+      </Tab.Navigator>
+    </SafeAreaView>
+  );
+};
+
+// Platform-specific main tabs component
+const MainTabs: React.FC = () => {
+  return Platform.OS === 'ios' ? <IOSMainTabs /> : <AndroidMainTabs />;
 };
 
 const RootNavigator: React.FC = () => {
