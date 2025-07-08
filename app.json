@@ -29,10 +29,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "navigationBar": {
-        "backgroundColor": "#ffffff"
-      },
-      "softwareKeyboardLayoutMode": "pan",
+      "edgeToEdgeEnabled": true,
       "permissions": [
         "android.permission.VIBRATE",
         "android.permission.WAKE_LOCK"
