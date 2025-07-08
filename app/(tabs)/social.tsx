@@ -13,7 +13,7 @@ import {
   Alert,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import { Heart, MessageCircle, Share, Edit3, Send } from 'lucide-react-native';
+import { Heart, MessageCircle, Share, LocationEdit as Edit3, Send } from 'lucide-react-native';
 import { RootState, AppDispatch } from '@/store/store';
 import { fetchPosts, likePost, addComment, createPost } from '@/store/slices/socialSlice';
 import { Post } from '@/store/slices/socialSlice';

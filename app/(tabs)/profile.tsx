@@ -11,19 +11,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useSelector, useDispatch } from 'react-redux';
-import { 
-  User, 
-  Settings, 
-  Bell, 
-  Trophy, 
-  BarChart3, 
-  Crown, 
-  HelpCircle, 
-  LogOut,
-  Shield,
-  Gift,
-  Share
-} from 'lucide-react-native';
+import { User, Settings, Bell, Trophy, ChartBar as BarChart3, Crown, Circle as HelpCircle, LogOut, Shield, Gift, Share } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RootState, AppDispatch } from '@/store/store';
 import { signOut } from '@/store/slices/authSlice';

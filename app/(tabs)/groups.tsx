@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useSelector, useDispatch } from 'react-redux';
-import { Users, Plus, Flame, CheckCircle, Gift } from 'lucide-react-native';
+import { Users, Plus, Flame, CircleCheck as CheckCircle, Gift } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RootState, AppDispatch } from '@/store/store';
 import { fetchGroups, completeGroupHabit } from '@/store/slices/groupsSlice';

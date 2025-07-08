@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { useSelector } from 'react-redux';
-import { Home, Target, Users, MessageCircle, User } from 'lucide-react-native';
+import { Chrome as Home, Target, Users, MessageCircle, User } from 'lucide-react-native';
 import { RootState } from '@/store/store';
 
 export default function TabLayout() {

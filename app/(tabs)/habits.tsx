@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useSelector, useDispatch } from 'react-redux';
-import { Target, Plus, Filter, Flame } from 'lucide-react-native';
+import { Target, Plus, ListFilter as Filter, Flame } from 'lucide-react-native';
 import { RootState, AppDispatch } from '@/store/store';
 import { fetchHabits, completeHabit } from '@/store/slices/habitsSlice';
 import { createPost } from '@/store/slices/socialSlice';
