@@ -10,16 +10,16 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { signIn } from '../../store/slices/authSlice';
-import { AppDispatch, RootState } from '../../store/store';
+import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react-native';
+import { signIn } from '@/store/slices/authSlice';
+import { AppDispatch, RootState } from '@/store/store';
 
-const LoginScreen: React.FC = () => {
-  const navigation = useNavigation<any>();
+export default function LoginScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const { isLoading, error } = useSelector((state: RootState) => state.auth);
   
@@ -35,6 +35,7 @@ const LoginScreen: React.FC = () => {
 
     try {
       await dispatch(signIn({ email, password })).unwrap();
+      router.replace('/(tabs)');
     } catch (err) {
       Alert.alert('Login Failed', error || 'An error occurred');
     }
@@ -54,14 +55,17 @@ const LoginScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.logoContainer}>
-            <MaterialCommunityIcons name="fire" size={80} color="#FFFFFF" />
+            <Image
+              source={{ uri: 'https://images.pexels.com/photos/1002703/pexels-photo-1002703.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&dpr=2' }}
+              style={styles.logo}
+            />
             <Text style={styles.appName}>STREAKFIRE</Text>
             <Text style={styles.tagline}>Build habits, maintain streaks</Text>
           </View>
 
           <View style={styles.formContainer}>
             <View style={styles.inputContainer}>
-              <MaterialCommunityIcons name="email-outline" size={20} color="#666" style={styles.inputIcon} />
+              <Mail size={20} color="#666" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Email"
@@ -74,7 +78,7 @@ const LoginScreen: React.FC = () => {
             </View>
 
             <View style={styles.inputContainer}>
-              <MaterialCommunityIcons name="lock-outline" size={20} color="#666" style={styles.inputIcon} />
+              <Lock size={20} color="#666" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Password"
@@ -87,11 +91,11 @@ const LoginScreen: React.FC = () => {
                 onPress={() => setShowPassword(!showPassword)}
                 style={styles.eyeIcon}
               >
-                <MaterialCommunityIcons
-                  name={showPassword ? 'eye-off-outline' : 'eye-outline' as any}
-                  size={20}
-                  color="#666"
-                />
+                {showPassword ? (
+                  <EyeOff size={20} color="#666" />
+                ) : (
+                  <Eye size={20} color="#666" />
+                )}
               </TouchableOpacity>
             </View>
 
@@ -107,29 +111,16 @@ const LoginScreen: React.FC = () => {
               {isLoading ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={styles.loginButtonText}>Login</Text>
+                <>
+                  <Text style={styles.loginButtonText}>Login</Text>
+                  <ArrowRight size={20} color="#FFFFFF" />
+                </>
               )}
-            </TouchableOpacity>
-
-            <View style={styles.dividerContainer}>
-              <View style={styles.divider} />
-              <Text style={styles.dividerText}>OR</Text>
-              <View style={styles.divider} />
-            </View>
-
-            <TouchableOpacity style={styles.socialButton}>
-              <MaterialCommunityIcons name="google" size={20} color="#DB4437" />
-              <Text style={styles.socialButtonText}>Continue with Google</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.socialButton}>
-              <MaterialCommunityIcons name="apple" size={20} color="#000000" />
-              <Text style={styles.socialButtonText}>Continue with Apple</Text>
             </TouchableOpacity>
 
             <View style={styles.signupContainer}>
               <Text style={styles.signupText}>Don't have an account? </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+              <TouchableOpacity onPress={() => router.push('/(auth)/signup')}>
                 <Text style={styles.signupLink}>Sign Up</Text>
               </TouchableOpacity>
             </View>
@@ -138,7 +129,7 @@ const LoginScreen: React.FC = () => {
       </KeyboardAvoidingView>
     </LinearGradient>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -157,14 +148,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
+  logo: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: 20,
+  },
   appName: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     color: '#FFFFFF',
     marginTop: 10,
   },
   tagline: {
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     color: '#FFFFFF',
     opacity: 0.8,
     marginTop: 5,
@@ -197,6 +195,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 50,
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     color: '#333',
   },
   eyeIcon: {
@@ -209,11 +208,13 @@ const styles = StyleSheet.create({
   forgotPasswordText: {
     color: '#FF6B6B',
     fontSize: 14,
+    fontFamily: 'Inter-Medium',
   },
   loginButton: {
     backgroundColor: '#FF6B6B',
     borderRadius: 10,
     height: 50,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -221,36 +222,8 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: 'bold',
-  },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 20,
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E0E0E0',
-  },
-  dividerText: {
-    marginHorizontal: 10,
-    color: '#999',
-    fontSize: 14,
-  },
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 10,
-    height: 50,
-    marginBottom: 10,
-  },
-  socialButtonText: {
-    marginLeft: 10,
-    fontSize: 16,
-    color: '#333',
+    fontFamily: 'Inter-SemiBold',
+    marginRight: 8,
   },
   signupContainer: {
     flexDirection: 'row',
@@ -260,12 +233,11 @@ const styles = StyleSheet.create({
   signupText: {
     color: '#666',
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
   },
   signupLink: {
     color: '#FF6B6B',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-SemiBold',
   },
 });
-
-export default LoginScreen;

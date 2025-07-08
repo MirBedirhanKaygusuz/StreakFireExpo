@@ -9,16 +9,15 @@ import {
   Alert,
   Image,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { useSelector, useDispatch } from 'react-redux';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Users, Plus, Flame, CheckCircle, Gift } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { RootState, AppDispatch } from '../../store/store';
-import { fetchGroups, completeGroupHabit } from '../../store/slices/groupsSlice';
-import { Group } from '../../store/slices/groupsSlice';
+import { RootState, AppDispatch } from '@/store/store';
+import { fetchGroups, completeGroupHabit } from '@/store/slices/groupsSlice';
+import { Group } from '@/store/slices/groupsSlice';
 
-const GroupsScreen: React.FC = () => {
-  const navigation = useNavigation<any>();
+export default function GroupsScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const { groups, isLoading } = useSelector((state: RootState) => state.groups);
   const { user } = useSelector((state: RootState) => state.auth);
@@ -69,7 +68,7 @@ const GroupsScreen: React.FC = () => {
       <TouchableOpacity
         key={group.id}
         style={styles.groupCard}
-        onPress={() => navigation.navigate('GroupDetail', { groupId: group.id })}
+        onPress={() => router.push(`/group/${group.id}`)}
       >
         <LinearGradient
           colors={['#667EEA', '#764BA2']}
@@ -80,7 +79,7 @@ const GroupsScreen: React.FC = () => {
             <Text style={styles.habitName}>{group.habitName}</Text>
           </View>
           <View style={styles.streakContainer}>
-            <MaterialCommunityIcons name="fire" size={32} color="#FFFFFF" />
+            <Flame size={32} color="#FFFFFF" />
             <Text style={styles.streakNumber}>{group.currentStreak}</Text>
           </View>
         </LinearGradient>
@@ -110,12 +109,14 @@ const GroupsScreen: React.FC = () => {
               {group.members.slice(0, 5).map((member, index) => (
                 <View key={member.userId} style={styles.memberAvatar}>
                   <Image
-                    source={{ uri: member.userAvatar || 'https://via.placeholder.com/32' }}
+                    source={{ 
+                      uri: member.userAvatar || 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=2' 
+                    }}
                     style={styles.avatarImage}
                   />
                   {member.lastCompleted === today && (
                     <View style={styles.completedIndicator}>
-                      <MaterialCommunityIcons name="check" size={12} color="#FFFFFF" />
+                      <CheckCircle size={12} color="#FFFFFF" />
                     </View>
                   )}
                 </View>
@@ -135,14 +136,14 @@ const GroupsScreen: React.FC = () => {
               style={styles.completeButton}
               onPress={() => handleCompleteGroupHabit(group.id)}
             >
-              <MaterialCommunityIcons name="check-circle-outline" size={20} color="#FFFFFF" />
+              <CheckCircle size={20} color="#FFFFFF" />
               <Text style={styles.completeButtonText}>Mark as Complete</Text>
             </TouchableOpacity>
           )}
 
           {isCompletedToday && (
             <View style={styles.completedBadge}>
-              <MaterialCommunityIcons name="check-circle" size={20} color="#4CAF50" />
+              <CheckCircle size={20} color="#4CAF50" />
               <Text style={styles.completedText}>Completed Today</Text>
             </View>
           )}
@@ -153,35 +154,34 @@ const GroupsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Your Groups</Text>
+        <TouchableOpacity
+          style={styles.createButton}
+          onPress={() => router.push('/create-group')}
+        >
+          <Plus size={20} color="#FF6B6B" />
+        </TouchableOpacity>
+      </View>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Your Groups</Text>
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={() => navigation.navigate('CreateGroup')}
-          >
-            <MaterialCommunityIcons name="plus" size={20} color="#FF6B6B" />
-            <Text style={styles.createButtonText}>Create Group</Text>
-          </TouchableOpacity>
-        </View>
-
         {groups.map(renderGroupCard)}
 
         {groups.length === 0 && (
           <View style={styles.emptyState}>
-            <MaterialCommunityIcons name="account-group-outline" size={80} color="#BDBDBD" />
+            <Users size={80} color="#BDBDBD" />
             <Text style={styles.emptyTitle}>No groups yet</Text>
             <Text style={styles.emptyText}>
               Create or join a group to build habits together!
             </Text>
             <TouchableOpacity
               style={styles.emptyCreateButton}
-              onPress={() => navigation.navigate('CreateGroup')}
+              onPress={() => router.push('/create-group')}
             >
               <Text style={styles.emptyCreateButtonText}>Create Your First Group</Text>
             </TouchableOpacity>
@@ -193,7 +193,7 @@ const GroupsScreen: React.FC = () => {
             colors={['#F093FB', '#F5576C']}
             style={styles.inviteCard}
           >
-            <MaterialCommunityIcons name="gift-outline" size={48} color="#FFFFFF" />
+            <Gift size={48} color="#FFFFFF" />
             <Text style={styles.inviteTitle}>Invite Friends</Text>
             <Text style={styles.inviteText}>
               Share your referral code and earn streak protections!
@@ -201,7 +201,7 @@ const GroupsScreen: React.FC = () => {
             <View style={styles.referralCode}>
               <Text style={styles.referralCodeText}>{user?.referralCode}</Text>
               <TouchableOpacity style={styles.copyButton}>
-                <MaterialCommunityIcons name="content-copy" size={20} color="#FFFFFF" />
+                <Text style={styles.copyButtonText}>Copy</Text>
               </TouchableOpacity>
             </View>
           </LinearGradient>
@@ -209,36 +209,34 @@ const GroupsScreen: React.FC = () => {
       </ScrollView>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F8F9FA',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+    backgroundColor: '#FFFFFF',
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     color: '#333',
   },
   createButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF0F0',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
+    width: 40,
+    height: 40,
     borderRadius: 20,
-  },
-  createButtonText: {
-    color: '#FF6B6B',
-    marginLeft: 5,
-    fontWeight: '600',
+    backgroundColor: '#FFF0F0',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   groupCard: {
     backgroundColor: '#FFFFFF',
@@ -266,12 +264,13 @@ const styles = StyleSheet.create({
   },
   groupName: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     color: '#FFFFFF',
     marginBottom: 5,
   },
   habitName: {
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
     color: '#FFFFFF',
     opacity: 0.9,
   },
@@ -280,7 +279,7 @@ const styles = StyleSheet.create({
   },
   streakNumber: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     color: '#FFFFFF',
     marginTop: 5,
   },
@@ -289,6 +288,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
     color: '#666',
     marginBottom: 15,
     lineHeight: 20,
@@ -298,6 +298,7 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 14,
+    fontFamily: 'Inter-Medium',
     color: '#666',
     marginBottom: 8,
   },
@@ -317,7 +318,7 @@ const styles = StyleSheet.create({
   },
   membersTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#333',
     marginBottom: 10,
   },
@@ -357,8 +358,8 @@ const styles = StyleSheet.create({
   },
   moreMembersText: {
     fontSize: 12,
+    fontFamily: 'Inter-SemiBold',
     color: '#666',
-    fontWeight: '600',
   },
   completeButton: {
     flexDirection: 'row',
@@ -367,12 +368,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF6B6B',
     paddingVertical: 12,
     borderRadius: 10,
+    gap: 8,
   },
   completeButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
+    fontFamily: 'Inter-SemiBold',
   },
   completedBadge: {
     flexDirection: 'row',
@@ -381,12 +382,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8F5E9',
     paddingVertical: 12,
     borderRadius: 10,
+    gap: 8,
   },
   completedText: {
     color: '#4CAF50',
     fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
+    fontFamily: 'Inter-SemiBold',
   },
   emptyState: {
     alignItems: 'center',
@@ -395,13 +396,14 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 24,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#666',
     marginTop: 20,
     marginBottom: 10,
   },
   emptyText: {
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     color: '#999',
     textAlign: 'center',
     marginBottom: 30,
@@ -415,7 +417,7 @@ const styles = StyleSheet.create({
   emptyCreateButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   inviteSection: {
     padding: 20,
@@ -427,13 +429,14 @@ const styles = StyleSheet.create({
   },
   inviteTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     color: '#FFFFFF',
     marginTop: 15,
     marginBottom: 10,
   },
   inviteText: {
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 20,
@@ -446,16 +449,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 25,
+    gap: 10,
   },
   referralCodeText: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     color: '#FFFFFF',
-    marginRight: 10,
   },
   copyButton: {
-    padding: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    borderRadius: 15,
+  },
+  copyButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
   },
 });
-
-export default GroupsScreen;

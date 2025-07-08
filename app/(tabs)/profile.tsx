@@ -9,16 +9,27 @@ import {
   Alert,
   Switch,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { useSelector, useDispatch } from 'react-redux';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { 
+  User, 
+  Settings, 
+  Bell, 
+  Trophy, 
+  BarChart3, 
+  Crown, 
+  HelpCircle, 
+  LogOut,
+  Shield,
+  Gift,
+  Share
+} from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { RootState, AppDispatch } from '../../store/store';
-import { signOut } from '../../store/slices/authSlice';
-import { togglePushNotifications } from '../../store/slices/notificationsSlice';
+import { RootState, AppDispatch } from '@/store/store';
+import { signOut } from '@/store/slices/authSlice';
+import { togglePushNotifications } from '@/store/slices/notificationsSlice';
 
-const ProfileScreen: React.FC = () => {
-  const navigation = useNavigation<any>();
+export default function ProfileScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { habits } = useSelector((state: RootState) => state.habits);
@@ -49,6 +60,7 @@ const ProfileScreen: React.FC = () => {
           onPress: async () => {
             try {
               await dispatch(signOut());
+              router.replace('/(auth)/login');
             } catch (error) {
               Alert.alert('Error', 'Failed to sign out');
             }
@@ -65,25 +77,25 @@ const ProfileScreen: React.FC = () => {
 
   const profileStats = [
     {
-      icon: 'fire',
+      icon: Flame,
       label: 'Total Streak Days',
       value: totalStreak.toString(),
       color: '#FF6B6B',
     },
     {
-      icon: 'trophy',
+      icon: Trophy,
       label: 'Longest Streak',
       value: longestStreak.toString(),
       color: '#FFC107',
     },
     {
-      icon: 'checkbox-marked-circle',
+      icon: Target,
       label: 'Active Habits',
       value: habits.length.toString(),
       color: '#4CAF50',
     },
     {
-      icon: 'account-group',
+      icon: Users,
       label: 'Groups Joined',
       value: groups.length.toString(),
       color: '#2196F3',
@@ -92,38 +104,38 @@ const ProfileScreen: React.FC = () => {
 
   const menuItems = [
     {
-      icon: 'bell-outline',
+      icon: Bell,
       title: 'Notifications',
-      onPress: () => navigation.navigate('Notifications'),
+      onPress: () => router.push('/notifications'),
       showBadge: false,
     },
     {
-      icon: 'trophy-outline',
+      icon: Trophy,
       title: 'Achievements',
       onPress: () => {},
       showBadge: false,
     },
     {
-      icon: 'chart-line',
+      icon: BarChart3,
       title: 'Statistics',
       onPress: () => {},
       showBadge: false,
     },
     {
-      icon: 'crown',
+      icon: Crown,
       title: 'Premium',
       onPress: () => {},
       showBadge: !user?.isPremium,
       badgeText: 'Upgrade',
     },
     {
-      icon: 'cog-outline',
+      icon: Settings,
       title: 'Settings',
-      onPress: () => navigation.navigate('Settings'),
+      onPress: () => router.push('/settings'),
       showBadge: false,
     },
     {
-      icon: 'help-circle-outline',
+      icon: HelpCircle,
       title: 'Help & Support',
       onPress: () => {},
       showBadge: false,
@@ -138,7 +150,9 @@ const ProfileScreen: React.FC = () => {
       >
         <View style={styles.profileInfo}>
           <Image
-            source={{ uri: user?.photoURL || 'https://via.placeholder.com/100' }}
+            source={{ 
+              uri: user?.photoURL || 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&dpr=2' 
+            }}
             style={styles.avatar}
           />
           <Text style={styles.userName}>{user?.displayName}</Text>
@@ -146,20 +160,23 @@ const ProfileScreen: React.FC = () => {
           
           {user?.isPremium && (
             <View style={styles.premiumBadge}>
-              <MaterialCommunityIcons name="crown" size={16} color="#FFD700" />
+              <Crown size={16} color="#FFD700" />
               <Text style={styles.premiumText}>Premium Member</Text>
             </View>
           )}
         </View>
 
         <View style={styles.statsContainer}>
-          {profileStats.map((stat, index) => (
-            <View key={index} style={styles.statItem}>
-              <MaterialCommunityIcons name={stat.icon as any} size={24} color="#FFFFFF" />
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
-            </View>
-          ))}
+          {profileStats.map((stat, index) => {
+            const IconComponent = stat.icon;
+            return (
+              <View key={index} style={styles.statItem}>
+                <IconComponent size={24} color="#FFFFFF" />
+                <Text style={styles.statValue}>{stat.value}</Text>
+                <Text style={styles.statLabel}>{stat.label}</Text>
+              </View>
+            );
+          })}
         </View>
       </LinearGradient>
 
@@ -169,7 +186,7 @@ const ProfileScreen: React.FC = () => {
             colors={['#4FACFE', '#00F2FE']}
             style={styles.streakProtectionGradient}
           >
-            <MaterialCommunityIcons name="shield-check" size={32} color="#FFFFFF" />
+            <Shield size={32} color="#FFFFFF" />
             <View style={styles.streakProtectionInfo}>
               <Text style={styles.streakProtectionTitle}>Streak Protections</Text>
               <Text style={styles.streakProtectionCount}>
@@ -183,19 +200,19 @@ const ProfileScreen: React.FC = () => {
         </View>
 
         <View style={styles.referralCard}>
-          <MaterialCommunityIcons name="gift-outline" size={24} color="#FF6B6B" />
+          <Gift size={24} color="#FF6B6B" />
           <View style={styles.referralInfo}>
             <Text style={styles.referralTitle}>Your Referral Code</Text>
             <Text style={styles.referralCode}>{user?.referralCode}</Text>
           </View>
           <TouchableOpacity style={styles.shareButton}>
-            <MaterialCommunityIcons name="share-variant" size={20} color="#FF6B6B" />
+            <Share size={20} color="#FF6B6B" />
           </TouchableOpacity>
         </View>
 
         <View style={styles.menuSection}>
           <View style={styles.notificationToggle}>
-            <MaterialCommunityIcons name="bell-outline" size={24} color="#666" />
+            <Bell size={24} color="#666" />
             <Text style={styles.notificationToggleText}>Push Notifications</Text>
             <Switch
               value={notificationsEnabled}
@@ -205,26 +222,32 @@ const ProfileScreen: React.FC = () => {
             />
           </View>
 
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.menuItem}
-              onPress={item.onPress}
-            >
-              <MaterialCommunityIcons name={item.icon as any} size={24} color="#666" />
-              <Text style={styles.menuItemText}>{item.title}</Text>
-              {item.showBadge && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{item.badgeText || ''}</Text>
-                </View>
-              )}
-              <MaterialCommunityIcons name="chevron-right" size={24} color="#BDBDBD" />
-            </TouchableOpacity>
-          ))}
+          {menuItems.map((item, index) => {
+            const IconComponent = item.icon;
+            return (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.menuItem,
+                  index === menuItems.length - 1 && styles.lastItem,
+                ]}
+                onPress={item.onPress}
+              >
+                <IconComponent size={24} color="#666" />
+                <Text style={styles.menuItemText}>{item.title}</Text>
+                {item.showBadge && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{item.badgeText || ''}</Text>
+                  </View>
+                )}
+                <Text style={styles.chevron}>›</Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-          <MaterialCommunityIcons name="logout" size={20} color="#FF6B6B" />
+          <LogOut size={20} color="#FF6B6B" />
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
 
@@ -232,15 +255,15 @@ const ProfileScreen: React.FC = () => {
       </View>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F8F9FA',
   },
   header: {
-    paddingTop: 20,
+    paddingTop: 60,
     paddingBottom: 30,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
@@ -248,6 +271,7 @@ const styles = StyleSheet.create({
   profileInfo: {
     alignItems: 'center',
     marginBottom: 30,
+    paddingHorizontal: 20,
   },
   avatar: {
     width: 100,
@@ -259,12 +283,13 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     color: '#FFFFFF',
     marginBottom: 5,
   },
   userEmail: {
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     color: '#FFFFFF',
     opacity: 0.9,
   },
@@ -276,12 +301,12 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 15,
     marginTop: 10,
+    gap: 5,
   },
   premiumText: {
     color: '#FFFFFF',
-    marginLeft: 5,
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   statsContainer: {
     flexDirection: 'row',
@@ -293,39 +318,43 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     color: '#FFFFFF',
     marginTop: 5,
   },
   statLabel: {
     fontSize: 12,
+    fontFamily: 'Inter-Medium',
     color: '#FFFFFF',
     opacity: 0.9,
     marginTop: 2,
+    textAlign: 'center',
   },
   content: {
     padding: 20,
   },
   streakProtectionCard: {
     marginBottom: 15,
+    borderRadius: 15,
+    overflow: 'hidden',
   },
   streakProtectionGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 20,
-    borderRadius: 15,
+    gap: 15,
   },
   streakProtectionInfo: {
     flex: 1,
-    marginLeft: 15,
   },
   streakProtectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#FFFFFF',
   },
   streakProtectionCount: {
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
     color: '#FFFFFF',
     opacity: 0.9,
     marginTop: 2,
@@ -338,7 +367,7 @@ const styles = StyleSheet.create({
   },
   getMoreText: {
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   referralCard: {
     flexDirection: 'row',
@@ -355,18 +384,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
     elevation: 5,
+    gap: 15,
   },
   referralInfo: {
     flex: 1,
-    marginLeft: 15,
   },
   referralTitle: {
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
     color: '#666',
   },
   referralCode: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     color: '#333',
     marginTop: 2,
   },
@@ -392,12 +422,13 @@ const styles = StyleSheet.create({
     padding: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+    gap: 15,
   },
   notificationToggleText: {
     flex: 1,
     fontSize: 16,
+    fontFamily: 'Inter-Medium',
     color: '#333',
-    marginLeft: 15,
   },
   menuItem: {
     flexDirection: 'row',
@@ -405,12 +436,16 @@ const styles = StyleSheet.create({
     padding: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+    gap: 15,
+  },
+  lastItem: {
+    borderBottomWidth: 0,
   },
   menuItemText: {
     flex: 1,
     fontSize: 16,
+    fontFamily: 'Inter-Medium',
     color: '#333',
-    marginLeft: 15,
   },
   badge: {
     backgroundColor: '#FF6B6B',
@@ -422,7 +457,11 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
+  },
+  chevron: {
+    fontSize: 20,
+    color: '#BDBDBD',
   },
   signOutButton: {
     flexDirection: 'row',
@@ -432,18 +471,17 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 15,
     marginBottom: 20,
+    gap: 10,
   },
   signOutText: {
     color: '#FF6B6B',
     fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 10,
+    fontFamily: 'Inter-SemiBold',
   },
   version: {
     textAlign: 'center',
     color: '#999',
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
   },
 });
-
-export default ProfileScreen;

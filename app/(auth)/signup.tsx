@@ -11,15 +11,14 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { signUp } from '../../store/slices/authSlice';
-import { AppDispatch, RootState } from '../../store/store';
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, ArrowRight } from 'lucide-react-native';
+import { signUp } from '@/store/slices/authSlice';
+import { AppDispatch, RootState } from '@/store/store';
 
-const SignUpScreen: React.FC = () => {
-  const navigation = useNavigation<any>();
+export default function SignUpScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const { isLoading } = useSelector((state: RootState) => state.auth);
   
@@ -29,7 +28,6 @@ const SignUpScreen: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [referralCode, setReferralCode] = useState('');
 
   const handleSignUp = async () => {
     if (!displayName || !email || !password || !confirmPassword) {
@@ -49,7 +47,7 @@ const SignUpScreen: React.FC = () => {
 
     try {
       await dispatch(signUp({ email, password, displayName })).unwrap();
-      navigation.navigate('Onboarding');
+      router.push('/(auth)/onboarding');
     } catch (err: any) {
       Alert.alert('Sign Up Failed', err.message || 'An error occurred');
     }
@@ -70,9 +68,9 @@ const SignUpScreen: React.FC = () => {
         >
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => router.back()}
           >
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+            <ArrowLeft size={24} color="#FFFFFF" />
           </TouchableOpacity>
 
           <View style={styles.headerContainer}>
@@ -82,7 +80,7 @@ const SignUpScreen: React.FC = () => {
 
           <View style={styles.formContainer}>
             <View style={styles.inputContainer}>
-              <MaterialCommunityIcons name="account-outline" size={20} color="#666" style={styles.inputIcon} />
+              <User size={20} color="#666" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Display Name"
@@ -94,7 +92,7 @@ const SignUpScreen: React.FC = () => {
             </View>
 
             <View style={styles.inputContainer}>
-              <MaterialCommunityIcons name="email-outline" size={20} color="#666" style={styles.inputIcon} />
+              <Mail size={20} color="#666" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Email"
@@ -107,7 +105,7 @@ const SignUpScreen: React.FC = () => {
             </View>
 
             <View style={styles.inputContainer}>
-              <MaterialCommunityIcons name="lock-outline" size={20} color="#666" style={styles.inputIcon} />
+              <Lock size={20} color="#666" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Password"
@@ -120,16 +118,16 @@ const SignUpScreen: React.FC = () => {
                 onPress={() => setShowPassword(!showPassword)}
                 style={styles.eyeIcon}
               >
-                <MaterialCommunityIcons
-                  name={showPassword ? 'eye-off-outline' : 'eye-outline' as any}
-                  size={20}
-                  color="#666"
-                />
+                {showPassword ? (
+                  <EyeOff size={20} color="#666" />
+                ) : (
+                  <Eye size={20} color="#666" />
+                )}
               </TouchableOpacity>
             </View>
 
             <View style={styles.inputContainer}>
-              <MaterialCommunityIcons name="lock-check-outline" size={20} color="#666" style={styles.inputIcon} />
+              <Lock size={20} color="#666" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Confirm Password"
@@ -142,29 +140,12 @@ const SignUpScreen: React.FC = () => {
                 onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                 style={styles.eyeIcon}
               >
-                <MaterialCommunityIcons
-                  name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline' as any}
-                  size={20}
-                  color="#666"
-                />
+                {showConfirmPassword ? (
+                  <EyeOff size={20} color="#666" />
+                ) : (
+                  <Eye size={20} color="#666" />
+                )}
               </TouchableOpacity>
-            </View>
-
-            <View style={styles.referralContainer}>
-              <View style={styles.inputContainer}>
-                <MaterialCommunityIcons name="gift-outline" size={20} color="#666" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Referral Code (Optional)"
-                  placeholderTextColor="#999"
-                  value={referralCode}
-                  onChangeText={setReferralCode}
-                  autoCapitalize="characters"
-                />
-              </View>
-              <Text style={styles.referralText}>
-                Enter a friend's code to get 3 free streak protections!
-              </Text>
             </View>
 
             <TouchableOpacity
@@ -175,7 +156,10 @@ const SignUpScreen: React.FC = () => {
               {isLoading ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={styles.signUpButtonText}>Sign Up</Text>
+                <>
+                  <Text style={styles.signUpButtonText}>Sign Up</Text>
+                  <ArrowRight size={20} color="#FFFFFF" />
+                </>
               )}
             </TouchableOpacity>
 
@@ -187,7 +171,7 @@ const SignUpScreen: React.FC = () => {
 
             <View style={styles.loginContainer}>
               <Text style={styles.loginText}>Already have an account? </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
                 <Text style={styles.loginLink}>Login</Text>
               </TouchableOpacity>
             </View>
@@ -196,7 +180,7 @@ const SignUpScreen: React.FC = () => {
       </KeyboardAvoidingView>
     </LinearGradient>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -218,12 +202,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     color: '#FFFFFF',
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     color: '#FFFFFF',
     opacity: 0.8,
   },
@@ -255,24 +240,17 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 50,
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     color: '#333',
   },
   eyeIcon: {
     padding: 5,
   },
-  referralContainer: {
-    marginBottom: 20,
-  },
-  referralText: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 5,
-    marginLeft: 5,
-  },
   signUpButton: {
     backgroundColor: '#FF6B6B',
     borderRadius: 10,
     height: 50,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
@@ -280,10 +258,12 @@ const styles = StyleSheet.create({
   signUpButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-SemiBold',
+    marginRight: 8,
   },
   termsText: {
     fontSize: 12,
+    fontFamily: 'Inter-Regular',
     color: '#666',
     textAlign: 'center',
     marginBottom: 20,
@@ -299,12 +279,11 @@ const styles = StyleSheet.create({
   loginText: {
     color: '#666',
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
   },
   loginLink: {
     color: '#FF6B6B',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-SemiBold',
   },
 });
-
-export default SignUpScreen;

@@ -9,9 +9,9 @@ import {
   FlatList,
   Animated,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Flame, Users, Share, Shield, ArrowRight, Check } from 'lucide-react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -19,8 +19,9 @@ interface OnboardingItem {
   id: string;
   title: string;
   description: string;
-  icon: string;
+  icon: React.ComponentType<any>;
   color: readonly [string, string];
+  image: string;
 }
 
 const onboardingData: OnboardingItem[] = [
@@ -28,34 +29,37 @@ const onboardingData: OnboardingItem[] = [
     id: '1',
     title: 'Build Lasting Habits',
     description: 'Create and track daily habits with our intuitive streak system. Watch your progress grow with visual fire animations!',
-    icon: 'fire',
+    icon: Flame,
     color: ['#FF6B6B', '#FF8E53'] as const,
+    image: 'https://images.pexels.com/photos/416978/pexels-photo-416978.jpeg?auto=compress&cs=tinysrgb&w=400&h=600&dpr=2',
   },
   {
     id: '2',
     title: 'Join Group Challenges',
     description: 'Team up with friends and family to maintain group streaks. Everyone succeeds together!',
-    icon: 'account-group',
+    icon: Users,
     color: ['#667EEA', '#764BA2'] as const,
+    image: 'https://images.pexels.com/photos/1595391/pexels-photo-1595391.jpeg?auto=compress&cs=tinysrgb&w=400&h=600&dpr=2',
   },
   {
     id: '3',
     title: 'Share Your Journey',
     description: 'Celebrate milestones, get encouragement from the community, and inspire others with your progress.',
-    icon: 'share-variant',
+    icon: Share,
     color: ['#F093FB', '#F5576C'] as const,
+    image: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400&h=600&dpr=2',
   },
   {
     id: '4',
     title: 'Never Lose Your Streak',
     description: 'Life happens! Use streak protections to maintain your hard-earned progress when you need a break.',
-    icon: 'shield-check',
+    icon: Shield,
     color: ['#4FACFE', '#00F2FE'] as const,
+    image: 'https://images.pexels.com/photos/1552617/pexels-photo-1552617.jpeg?auto=compress&cs=tinysrgb&w=400&h=600&dpr=2',
   },
 ];
 
-const OnboardingScreen: React.FC = () => {
-  const navigation = useNavigation<any>();
+export default function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
   const slidesRef = useRef<FlatList>(null);
@@ -70,33 +74,41 @@ const OnboardingScreen: React.FC = () => {
     if (currentIndex < onboardingData.length - 1) {
       slidesRef.current?.scrollToIndex({ index: currentIndex + 1 });
     } else {
-      // Navigate to main app
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Main' }],
-      });
+      router.replace('/(tabs)');
     }
   };
 
   const skip = () => {
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Main' }],
-    });
+    router.replace('/(tabs)');
   };
 
   const renderItem = ({ item }: { item: OnboardingItem }) => {
+    const IconComponent = item.icon;
+    
     return (
-      <LinearGradient
-        colors={item.color}
-        style={[styles.slide, { width }]}
-      >
-        <View style={styles.slideContent}>
-          <MaterialCommunityIcons name={item.icon as any as any} size={120} color="#FFFFFF" />
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.description}>{item.description}</Text>
-        </View>
-      </LinearGradient>
+      <View style={[styles.slide, { width }]}>
+        <LinearGradient
+          colors={item.color}
+          style={styles.slideGradient}
+        >
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: item.image }}
+              style={styles.slideImage}
+              resizeMode="cover"
+            />
+            <View style={styles.overlay} />
+          </View>
+          
+          <View style={styles.slideContent}>
+            <View style={styles.iconContainer}>
+              <IconComponent size={60} color="#FFFFFF" />
+            </View>
+            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.description}>{item.description}</Text>
+          </View>
+        </LinearGradient>
+      </View>
     );
   };
 
@@ -159,16 +171,16 @@ const OnboardingScreen: React.FC = () => {
           <Text style={styles.nextButtonText}>
             {currentIndex === onboardingData.length - 1 ? 'Get Started' : 'Next'}
           </Text>
-          <MaterialCommunityIcons 
-            name={currentIndex === onboardingData.length - 1 ? 'check' : 'arrow-right' as any} 
-            size={20} 
-            color="#FFFFFF" 
-          />
+          {currentIndex === onboardingData.length - 1 ? (
+            <Check size={20} color="#FFFFFF" />
+          ) : (
+            <ArrowRight size={20} color="#FFFFFF" />
+          )}
         </TouchableOpacity>
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -180,31 +192,64 @@ const styles = StyleSheet.create({
     top: 50,
     right: 20,
     zIndex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
   skipText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   slide: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  },
+  slideGradient: {
+    flex: 1,
+  },
+  imageContainer: {
+    flex: 0.6,
+    position: 'relative',
+  },
+  slideImage: {
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   slideContent: {
+    flex: 0.4,
     alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 40,
+    paddingVertical: 40,
+  },
+  iconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 30,
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     color: '#FFFFFF',
-    marginTop: 30,
     marginBottom: 15,
     textAlign: 'center',
   },
   description: {
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     color: '#FFFFFF',
     textAlign: 'center',
     lineHeight: 24,
@@ -229,7 +274,7 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FF6B6B',
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 25,
@@ -246,11 +291,9 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   nextButtonText: {
-    color: '#FF6B6B',
+    color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-SemiBold',
     marginRight: 8,
   },
 });
-
-export default OnboardingScreen;

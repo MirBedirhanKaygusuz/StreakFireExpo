@@ -13,12 +13,12 @@ import {
   Alert,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { RootState, AppDispatch } from '../../store/store';
-import { fetchPosts, likePost, addComment, createPost } from '../../store/slices/socialSlice';
-import { Post } from '../../store/slices/socialSlice';
+import { Heart, MessageCircle, Share, Edit3, Send } from 'lucide-react-native';
+import { RootState, AppDispatch } from '@/store/store';
+import { fetchPosts, likePost, addComment, createPost } from '@/store/slices/socialSlice';
+import { Post } from '@/store/slices/socialSlice';
 
-const SocialScreen: React.FC = () => {
+export default function SocialScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const { posts, isLoading, hasMore } = useSelector((state: RootState) => state.social);
   const { user } = useSelector((state: RootState) => state.auth);
@@ -99,7 +99,9 @@ const SocialScreen: React.FC = () => {
       <View style={styles.postCard}>
         <View style={styles.postHeader}>
           <Image
-            source={{ uri: item.userAvatar || 'https://via.placeholder.com/40' }}
+            source={{ 
+              uri: item.userAvatar || 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' 
+            }}
             style={styles.avatar}
           />
           <View style={styles.postHeaderText}>
@@ -112,7 +114,7 @@ const SocialScreen: React.FC = () => {
 
         {item.type === 'streak_milestone' && item.streakCount && (
           <View style={styles.milestoneCard}>
-            <MaterialCommunityIcons name="fire" size={32} color="#FF6B6B" />
+            <Text style={styles.milestoneEmoji}>🔥</Text>
             <Text style={styles.milestoneText}>
               {item.streakCount} Day Streak!
             </Text>
@@ -124,10 +126,10 @@ const SocialScreen: React.FC = () => {
             style={styles.actionButton}
             onPress={() => handleLikePost(item.id)}
           >
-            <MaterialCommunityIcons
-              name={isLiked ? 'heart' : 'heart-outline' as any}
-              size={24}
-              color={isLiked ? '#FF6B6B' : '#666'}
+            <Heart 
+              size={20} 
+              color={isLiked ? '#FF6B6B' : '#666'} 
+              fill={isLiked ? '#FF6B6B' : 'none'}
             />
             <Text style={[styles.actionText, isLiked && styles.likedText]}>
               {item.likes.length}
@@ -138,12 +140,12 @@ const SocialScreen: React.FC = () => {
             style={styles.actionButton}
             onPress={() => setCommentingOn(item.id)}
           >
-            <MaterialCommunityIcons name="comment-outline" size={24} color="#666" />
+            <MessageCircle size={20} color="#666" />
             <Text style={styles.actionText}>{item.comments.length}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.actionButton}>
-            <MaterialCommunityIcons name="share-outline" size={24} color="#666" />
+            <Share size={20} color="#666" />
           </TouchableOpacity>
         </View>
 
@@ -176,9 +178,8 @@ const SocialScreen: React.FC = () => {
               onPress={() => handleAddComment(item.id)}
               disabled={!commentText.trim()}
             >
-              <MaterialCommunityIcons
-                name="send"
-                size={24}
+              <Send
+                size={20}
                 color={commentText.trim() ? '#FF6B6B' : '#BDBDBD'}
               />
             </TouchableOpacity>
@@ -188,7 +189,7 @@ const SocialScreen: React.FC = () => {
     );
   };
 
-  const getTimeAgo = (date: Date) => {
+  const getTimeAgo = (date: string) => {
     const now = new Date();
     const diffMs = now.getTime() - new Date(date).getTime();
     const diffMins = Math.floor(diffMs / 60000);
@@ -207,6 +208,16 @@ const SocialScreen: React.FC = () => {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Community</Text>
+        <TouchableOpacity
+          style={styles.createPostButton}
+          onPress={() => setShowCreatePost(true)}
+        >
+          <Edit3 size={20} color="#FF6B6B" />
+        </TouchableOpacity>
+      </View>
+
       <FlatList
         data={posts}
         renderItem={renderPost}
@@ -218,7 +229,7 @@ const SocialScreen: React.FC = () => {
         onEndReachedThreshold={0.5}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <MaterialCommunityIcons name="post-outline" size={64} color="#BDBDBD" />
+            <MessageCircle size={64} color="#BDBDBD" />
             <Text style={styles.emptyTitle}>No posts yet</Text>
             <Text style={styles.emptyText}>
               Be the first to share your journey!
@@ -231,7 +242,7 @@ const SocialScreen: React.FC = () => {
         <View style={styles.createPostModal}>
           <View style={styles.createPostHeader}>
             <TouchableOpacity onPress={() => setShowCreatePost(false)}>
-              <MaterialCommunityIcons name="close" size={24} color="#666" />
+              <Text style={styles.cancelButton}>Cancel</Text>
             </TouchableOpacity>
             <Text style={styles.createPostTitle}>Create Post</Text>
             <TouchableOpacity
@@ -258,21 +269,38 @@ const SocialScreen: React.FC = () => {
           />
         </View>
       )}
-
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => setShowCreatePost(true)}
-      >
-        <MaterialCommunityIcons name="pencil" size={24} color="#FFFFFF" />
-      </TouchableOpacity>
     </KeyboardAvoidingView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F8F9FA',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontFamily: 'Inter-Bold',
+    color: '#333',
+  },
+  createPostButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFF0F0',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   postCard: {
     backgroundColor: '#FFFFFF',
@@ -305,16 +333,18 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#333',
   },
   timeAgo: {
     fontSize: 12,
+    fontFamily: 'Inter-Regular',
     color: '#999',
     marginTop: 2,
   },
   postContent: {
     fontSize: 15,
+    fontFamily: 'Inter-Regular',
     color: '#333',
     lineHeight: 22,
     marginBottom: 12,
@@ -327,27 +357,31 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 12,
   },
+  milestoneEmoji: {
+    fontSize: 24,
+    marginRight: 10,
+  },
   milestoneText: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     color: '#FF6B6B',
-    marginLeft: 10,
   },
   postActions: {
     flexDirection: 'row',
     borderTopWidth: 1,
     borderTopColor: '#F0F0F0',
     paddingTop: 12,
+    gap: 20,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 20,
+    gap: 5,
   },
   actionText: {
     fontSize: 14,
+    fontFamily: 'Inter-Medium',
     color: '#666',
-    marginLeft: 5,
   },
   likedText: {
     color: '#FF6B6B',
@@ -363,16 +397,18 @@ const styles = StyleSheet.create({
   },
   commentAuthor: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#333',
   },
   commentText: {
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
     color: '#666',
     marginTop: 2,
   },
   viewMoreComments: {
     fontSize: 14,
+    fontFamily: 'Inter-Medium',
     color: '#FF6B6B',
     marginTop: 5,
   },
@@ -383,6 +419,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#F0F0F0',
+    gap: 10,
   },
   commentTextInput: {
     flex: 1,
@@ -390,7 +427,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 8,
-    marginRight: 10,
+    fontFamily: 'Inter-Regular',
     maxHeight: 100,
   },
   emptyState: {
@@ -401,34 +438,16 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#666',
     marginTop: 20,
     marginBottom: 10,
   },
   emptyText: {
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     color: '#999',
     textAlign: 'center',
-  },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#FF6B6B',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
   },
   createPostModal: {
     position: 'absolute',
@@ -444,15 +463,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
+    paddingTop: 40,
+  },
+  cancelButton: {
+    fontSize: 16,
+    fontFamily: 'Inter-Medium',
+    color: '#666',
   },
   createPostTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#333',
   },
   postButton: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#FF6B6B',
   },
   postButtonDisabled: {
@@ -460,11 +485,10 @@ const styles = StyleSheet.create({
   },
   createPostInput: {
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     color: '#333',
     lineHeight: 24,
     textAlignVertical: 'top',
     minHeight: 100,
   },
 });
-
-export default SocialScreen;
