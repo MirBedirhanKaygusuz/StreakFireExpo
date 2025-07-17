@@ -1,22 +1,18 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { notificationService } from '../../services/notificationService';
 import { RootState } from '../store';
-import * as Notifications from 'expo-notifications';
-// import { 
-//   scheduleStreakReminder as scheduleNotification,
-//   cancelStreakReminder as cancelNotification,
-//   requestNotificationPermissions,
-//   sendLocalNotification
-// } from '../../services/notifications';
 
 export interface Notification {
   id: string;
-  userId: string;
-  type: 'streak_reminder' | 'group_invite' | 'achievement' | 'social_interaction' | 'system';
+  user_id: string;
   title: string;
-  body: string;
+  message: string;
+  type: string;
   data?: any;
-  read: boolean;
-  createdAt: string;
+  is_read: boolean;
+  scheduled_for?: string;
+  sent_at?: string;
+  created_at: string;
 }
 
 interface NotificationsState {
@@ -35,28 +31,6 @@ const initialState: NotificationsState = {
   pushEnabled: true,
 };
 
-// Mock notifications data
-let mockNotifications: Notification[] = [
-  {
-    id: '1',
-    userId: 'mock-user-id',
-    type: 'streak_reminder',
-    title: 'Streak Reminder! 🔥',
-    body: 'Don\'t forget to complete your morning exercise!',
-    read: false,
-    createdAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago - string olarak
-  },
-  {
-    id: '2',
-    userId: 'mock-user-id',
-    type: 'achievement',
-    title: 'Milestone Achieved! 🎉',
-    body: 'You\'ve reached a 7-day streak!',
-    read: true,
-    createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago - string olarak
-  },
-];
-
 export const fetchNotifications = createAsyncThunk(
   'notifications/fetchNotifications',
   async (_, { getState }) => {
@@ -65,11 +39,8 @@ export const fetchNotifications = createAsyncThunk(
     
     if (!userId) throw new Error('User not authenticated');
     
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const notifications = mockNotifications.filter(n => n.userId === userId);
-    const unreadCount = notifications.filter(n => !n.read).length;
+    const notifications = await notificationService.getUserNotifications(userId);
+    const unreadCount = await notificationService.getUnreadCount(userId);
     
     return { notifications, unreadCount };
   }
@@ -78,11 +49,7 @@ export const fetchNotifications = createAsyncThunk(
 export const markAsRead = createAsyncThunk(
   'notifications/markAsRead',
   async (notificationId: string) => {
-    const notification = mockNotifications.find(n => n.id === notificationId);
-    if (notification) {
-      notification.read = true;
-    }
-    return notificationId;
+    return await notificationService.markAsRead(notificationId);
   }
 );
 
@@ -94,29 +61,10 @@ export const markAllAsRead = createAsyncThunk(
     
     if (!userId) throw new Error('User not authenticated');
     
-    mockNotifications.forEach(n => {
-      if (n.userId === userId) {
-        n.read = true;
-      }
-    });
+    await notificationService.markAllAsRead(userId);
+    return userId;
   }
 );
-
-// export const scheduleStreakReminder = createAsyncThunk(
-//   'notifications/scheduleStreakReminder',
-//   async ({ habitId, habitName, time }: { habitId: string; habitName: string; time: Date }) => {
-//     await scheduleNotification(habitId, habitName, time);
-//     return { habitId, time };
-//   }
-// );
-
-// export const cancelStreakReminder = createAsyncThunk(
-//   'notifications/cancelStreakReminder',
-//   async (habitId: string) => {
-//     await cancelNotification(habitId);
-//     return habitId;
-//   }
-// );
 
 const notificationsSlice = createSlice({
   name: 'notifications',
@@ -125,13 +73,13 @@ const notificationsSlice = createSlice({
     togglePushNotifications: (state) => {
       state.pushEnabled = !state.pushEnabled;
       if (!state.pushEnabled) {
-        // Cancel all notifications using Expo notifications
-        Notifications.cancelAllScheduledNotificationsAsync();
+        // Cancel all notifications
+        notificationService.cancelAllNotifications();
       }
     },
     addNotification: (state, action: PayloadAction<Notification>) => {
       state.notifications.unshift(action.payload);
-      if (!action.payload.read) {
+      if (!action.payload.is_read) {
         state.unreadCount += 1;
       }
     },
@@ -141,6 +89,7 @@ const notificationsSlice = createSlice({
       // Fetch Notifications
       .addCase(fetchNotifications.pending, (state) => {
         state.isLoading = true;
+        state.error = null;
       })
       .addCase(fetchNotifications.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -153,16 +102,16 @@ const notificationsSlice = createSlice({
       })
       // Mark as Read
       .addCase(markAsRead.fulfilled, (state, action) => {
-        const notification = state.notifications.find(n => n.id === action.payload);
-        if (notification && !notification.read) {
-          notification.read = true;
+        const notification = state.notifications.find(n => n.id === action.payload.id);
+        if (notification && !notification.is_read) {
+          notification.is_read = true;
           state.unreadCount = Math.max(0, state.unreadCount - 1);
         }
       })
       // Mark All as Read
       .addCase(markAllAsRead.fulfilled, (state) => {
         state.notifications.forEach(n => {
-          n.read = true;
+          n.is_read = true;
         });
         state.unreadCount = 0;
       });

@@ -1,11 +1,6 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from '../store';
-import { 
-  mockFetchPosts, 
-  mockCreatePost, 
-  mockLikePost, 
-  mockAddComment 
-} from '../../services/mockData';
+import { socialService, CreatePostRequest, CreateCommentRequest } from '../../services/socialService';
 
 export interface Post {
   id: string;
@@ -49,51 +44,29 @@ const initialState: SocialState = {
 
 export const fetchPosts = createAsyncThunk(
   'social/fetchPosts',
-  async ({ limit = 20, refresh = false }: { limit?: number; refresh?: boolean }) => {
-    return await mockFetchPosts({ limit, refresh });
+  async () => {
+    return await socialService.fetchPosts();
   }
 );
 
 export const createPost = createAsyncThunk(
   'social/createPost',
-  async (postData: Omit<Post, 'id' | 'likes' | 'comments' | 'createdAt'>, { getState }) => {
-    const state = getState() as RootState;
-    const user = state.auth.user;
-    
-    if (!user) throw new Error('User not authenticated');
-    
-    const postWithUser = {
-      ...postData,
-      userId: user.id,
-      userName: user.displayName,
-      userAvatar: user.photoURL,
-    };
-    
-    return await mockCreatePost(postWithUser);
+  async (postData: CreatePostRequest) => {
+    return await socialService.createPost(postData);
   }
 );
 
 export const likePost = createAsyncThunk(
   'social/likePost',
-  async (postId: string, { getState }) => {
-    const state = getState() as RootState;
-    const userId = state.auth.user?.id;
-    
-    if (!userId) throw new Error('User not authenticated');
-    
-    return await mockLikePost(postId, userId);
+  async (postId: string) => {
+    return await socialService.likePost(postId);
   }
 );
 
 export const addComment = createAsyncThunk(
   'social/addComment',
-  async ({ postId, content }: { postId: string; content: string }, { getState }) => {
-    const state = getState() as RootState;
-    const user = state.auth.user;
-    
-    if (!user) throw new Error('User not authenticated');
-    
-    return await mockAddComment(postId, content, user);
+  async ({ postId, content }: CreateCommentRequest) => {
+    return await socialService.addComment({ postId, content });
   }
 );
 
@@ -115,13 +88,8 @@ const socialSlice = createSlice({
       })
       .addCase(fetchPosts.fulfilled, (state, action) => {
         state.isLoading = false;
-        if (action.payload.refresh) {
-          state.posts = action.payload.posts;
-        } else {
-          state.posts = [...state.posts, ...action.payload.posts];
-        }
-        state.lastVisible = action.payload.lastVisible;
-        state.hasMore = action.payload.hasMore;
+        state.posts = action.payload;
+        state.error = null;
       })
       .addCase(fetchPosts.rejected, (state, action) => {
         state.isLoading = false;
@@ -135,8 +103,10 @@ const socialSlice = createSlice({
       .addCase(likePost.fulfilled, (state, action) => {
         const post = state.posts.find(p => p.id === action.payload.postId);
         if (post) {
-          if (action.payload.isLiked) {
-            post.likes.push(action.payload.userId);
+          if (action.payload.liked) {
+            if (!post.likes.includes(action.payload.userId)) {
+              post.likes.push(action.payload.userId);
+            }
           } else {
             post.likes = post.likes.filter(id => id !== action.payload.userId);
           }
@@ -146,7 +116,8 @@ const socialSlice = createSlice({
       .addCase(addComment.fulfilled, (state, action) => {
         const post = state.posts.find(p => p.id === action.payload.postId);
         if (post) {
-          post.comments.push(action.payload.comment);
+          const { postId, ...comment } = action.payload;
+          post.comments.push(comment);
         }
       });
   },

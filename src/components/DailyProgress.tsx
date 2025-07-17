@@ -6,13 +6,14 @@ import {
   Animated,
 } from 'react-native';
 import { Habit } from '../store/slices/habitsSlice';
+import { formatDate } from '../types/additional.types';
 
 interface DailyProgressProps {
   habits: Habit[];
 }
 
 const DailyProgress: React.FC<DailyProgressProps> = ({ habits }) => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = formatDate(new Date());
   const completedToday = habits.filter(h => h.lastCompletedDate === today).length;
   const totalHabits = habits.length;
   const progress = totalHabits > 0 ? completedToday / totalHabits : 0;

@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../../services/supabase';
 
 interface User {
   id: string;
@@ -11,7 +11,6 @@ interface User {
   referralCode: string;
   createdAt: string; 
 }
-
 
 interface AuthState {
   user: User | null;
@@ -25,46 +24,95 @@ const initialState: AuthState = {
   error: null,
 };
 
+// Referral kodu oluştur
+const generateReferralCode = () => {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+};
+
 export const signUp = createAsyncThunk(
   'auth/signUp',
   async ({ email, password, displayName }: { email: string; password: string; displayName: string }) => {
-    // Mock implementation
-    const userData: User = {
-      id: 'mock-user-id',
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
-      displayName,
-      isPremium: false,
-      streakProtections: 3,
-      referralCode: generateReferralCode(),
-      createdAt: new Date().toISOString(),
-    };
-    
-    await AsyncStorage.setItem('userId', userData.id);
-    return userData;
+      password,
+    });
+
+    if (authError) throw authError;
+
+    // Kullanıcı profili oluştur
+    if (authData.user) {
+      const referralCode = generateReferralCode();
+      
+      const { error: profileError } = await supabase.from('user_profiles').insert([{
+        user_id: authData.user.id,
+        username: email.split('@')[0],
+        display_name: displayName,
+        joined_at: new Date().toISOString(),
+        last_active: new Date().toISOString(),
+      }]);
+
+      if (profileError) throw profileError;
+
+      // Kullanıcı puanları oluştur
+      const { error: pointsError } = await supabase.from('user_points').insert([{
+        user_id: authData.user.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }]);
+
+      if (pointsError) throw pointsError;
+
+      return {
+        id: authData.user.id,
+        email: authData.user.email || email,
+        displayName,
+        isPremium: false,
+        streakProtections: 3,
+        referralCode,
+        createdAt: authData.user.created_at,
+      };
+    }
+
+    throw new Error('Kullanıcı oluşturulamadı');
   }
 );
 
 export const signIn = createAsyncThunk(
   'auth/signIn',
   async ({ email, password }: { email: string; password: string }) => {
-    // Mock implementation
-    const userData: User = {
-      id: 'mock-user-id',
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      displayName: 'Mock User',
-      isPremium: false,
-      streakProtections: 3,
-      referralCode: generateReferralCode(),
-      createdAt: new Date().toISOString(),
-    };
+      password,
+    });
+
+    if (error) throw error;
     
-    await AsyncStorage.setItem('userId', userData.id);
-    return userData;
+    // Profil bilgilerini getir
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', data.user?.id)
+      .single();
+    
+    if (profileError) throw profileError;
+
+    return { 
+      id: data.user?.id || '',
+      email: data.user?.email || email,
+      displayName: profile.display_name || '',
+      photoURL: profile.avatar_url,
+      isPremium: profile.subscription_status === 'premium',
+      streakProtections: 3, // Bu değer gerçekte hesaplanabilir
+      referralCode: profile.username || '',
+      createdAt: data.user?.created_at || '',
+    };
   }
 );
 
 export const signOut = createAsyncThunk('auth/signOut', async () => {
-  await AsyncStorage.removeItem('userId');
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+  return null;
 });
 
 const authSlice = createSlice({
@@ -78,6 +126,13 @@ const authSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null;
+    },
+    authStateChanged: (state, action: PayloadAction<{ user: User } | null>) => {
+      if (action.payload) {
+        state.user = action.payload.user;
+      } else {
+        state.user = null;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -115,9 +170,5 @@ const authSlice = createSlice({
   },
 });
 
-function generateReferralCode(): string {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
-
-export const { updateUser, clearError } = authSlice.actions;
+export const { updateUser, clearError, authStateChanged } = authSlice.actions;
 export default authSlice.reducer;

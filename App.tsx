@@ -1,33 +1,48 @@
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { Provider } from 'react-redux';
+import { Provider, useDispatch } from 'react-redux';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { store } from './src/store/store';
 import RootNavigator from './src/navigation/RootNavigator';
-import { initializeFirebase } from './src/services/firebase';
-import { setupNotifications } from './src/services/notifications';
+import { initializeSupabase } from './src/services/supabase';
+import { notificationService } from './src/services/notificationService';
 
-const App: React.FC = () => {
+// Redux Provider içinde çalışacak iç bileşen
+const AppContent: React.FC = () => {
+  const dispatch = useDispatch();
+
   useEffect(() => {
-    const initialize = async () => {
-      // Initialize Firebase
-      initializeFirebase();
-      
-      // Setup push notifications
-      await setupNotifications();
+    // Supabase oturum dinleyicisi başlat
+    const unsubscribe = initializeSupabase(dispatch);
+    
+    // Bildirim ayarları
+    const setupNotifications = async () => {
+      await notificationService.requestPermissions();
     };
     
-    initialize();
-  }, []);
+    setupNotifications();
+    
+    // Temizlik
+    return () => {
+      unsubscribe();
+    };
+  }, [dispatch]);
 
+  return (
+    <NavigationContainer>
+      <RootNavigator />
+    </NavigationContainer>
+  );
+};
+
+// Ana uygulama bileşeni
+const App: React.FC = () => {
   return (
     <Provider store={store}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
-          <NavigationContainer>
-            <RootNavigator />
-          </NavigationContainer>
+          <AppContent />
         </SafeAreaProvider>
       </GestureHandlerRootView>
     </Provider>

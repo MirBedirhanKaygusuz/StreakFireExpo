@@ -1,59 +1,44 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { groupService } from '../../services/groupService';
 import { RootState } from '../store';
-import { 
-  mockFetchGroups, 
-  mockCreateGroup, 
-  mockInviteToGroup, 
-  mockRespondToInvite, 
-  mockCompleteGroupHabit 
-} from '../../services/mockData';
+import { GroupMembership } from '../../types/additional.types';
 
 export interface Group {
   id: string;
   name: string;
-  description: string;
-  creatorId: string;
-  habitId: string;
-  habitName: string;
-  members: GroupMember[];
-  currentStreak: number;
-  longestStreak: number;
-  lastCompletedDate?: string;
-  createdAt: string;
-  isActive: boolean;
-  streakProtectionsUsed: number;
+  description?: string;
+  creator_id: string;
+  challenge_type: string;
+  max_members: number;
+  current_members: number;
+  start_date: string;
+  end_date?: string;
+  entry_fee: number;
+  reward_pool: number;
+  is_public: boolean;
+  is_active: boolean;
+  created_at: string;
+  // İlişkisel veriler - veritabanından join ile gelecek
+  memberships?: GroupMembership[];
+  userMembership?: GroupMembership; // Kullanıcının bu gruptaki üyelik durumu
 }
 
-export interface GroupMember {
-  userId: string;
-  userName: string;
-  userAvatar?: string;
-  joinedAt: string;
-  completionRate: number;
-  lastCompleted?: string;
-  isAdmin: boolean;
-}
-
-export interface GroupInvite {
-  id: string;
-  groupId: string;
-  groupName: string;
-  inviterId: string;
-  inviterName: string;
-  invitedUserId: string;
-  status: 'pending' | 'accepted' | 'declined';
-  createdAt: string;
-}
+// GroupMember interface'i artık additional.types.ts'te tanımlı
+// Eski interface'i kaldırıyoruz
 
 interface GroupsState {
   groups: Group[];
-  invites: GroupInvite[];
+  publicGroups: Group[];
+  userMemberships: GroupMembership[]; // Kullanıcının tüm grup üyelikleri
+  invites: any[];
   isLoading: boolean;
   error: string | null;
 }
 
 const initialState: GroupsState = {
   groups: [],
+  publicGroups: [],
+  userMemberships: [],
   invites: [],
   isLoading: false,
   error: null,
@@ -67,55 +52,52 @@ export const fetchGroups = createAsyncThunk(
     
     if (!userId) throw new Error('User not authenticated');
     
-    return await mockFetchGroups(userId);
+    return await groupService.getUserGroups(userId);
+  }
+);
+
+export const fetchPublicGroups = createAsyncThunk(
+  'groups/fetchPublicGroups',
+  async () => {
+    return await groupService.getPublicGroups();
   }
 );
 
 export const createGroup = createAsyncThunk(
   'groups/createGroup',
-  async (groupData: { name: string; description: string; habitId: string; habitName: string }, { getState }) => {
+  async (groupData: any, { getState }) => {
     const state = getState() as RootState;
     const user = state.auth.user;
     
     if (!user) throw new Error('User not authenticated');
     
-    return await mockCreateGroup(groupData, user);
+    return await groupService.createGroup(groupData, user.id);
   }
 );
 
-export const inviteToGroup = createAsyncThunk(
-  'groups/inviteToGroup',
-  async ({ groupId, invitedUserId }: { groupId: string; invitedUserId: string }, { getState }) => {
-    const state = getState() as RootState;
-    const user = state.auth.user;
-    
-    if (!user) throw new Error('User not authenticated');
-    
-    return await mockInviteToGroup(groupId, invitedUserId, user);
-  }
-);
-
-export const respondToInvite = createAsyncThunk(
-  'groups/respondToInvite',
-  async ({ inviteId, accept }: { inviteId: string; accept: boolean }, { getState }) => {
-    const state = getState() as RootState;
-    const user = state.auth.user;
-    
-    if (!user) throw new Error('User not authenticated');
-    
-    return await mockRespondToInvite(inviteId, accept, user);
-  }
-);
-
-export const completeGroupHabit = createAsyncThunk(
-  'groups/completeGroupHabit',
+export const joinGroup = createAsyncThunk(
+  'groups/joinGroup',
   async (groupId: string, { getState }) => {
     const state = getState() as RootState;
-    const userId = state.auth.user?.id;
+    const user = state.auth.user;
     
-    if (!userId) throw new Error('User not authenticated');
+    if (!user) throw new Error('User not authenticated');
     
-    return await mockCompleteGroupHabit(groupId, userId);
+    await groupService.joinGroup(groupId, user.id);
+    return groupId;
+  }
+);
+
+export const leaveGroup = createAsyncThunk(
+  'groups/leaveGroup',
+  async (groupId: string, { getState }) => {
+    const state = getState() as RootState;
+    const user = state.auth.user;
+    
+    if (!user) throw new Error('User not authenticated');
+    
+    await groupService.leaveGroup(groupId, user.id);
+    return { groupId, userId: user.id };
   }
 );
 
@@ -132,6 +114,7 @@ const groupsSlice = createSlice({
       // Fetch Groups
       .addCase(fetchGroups.pending, (state) => {
         state.isLoading = true;
+        state.error = null;
       })
       .addCase(fetchGroups.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -141,31 +124,35 @@ const groupsSlice = createSlice({
         state.isLoading = false;
         state.error = action.error.message || 'Failed to fetch groups';
       })
+      // Fetch Public Groups
+      .addCase(fetchPublicGroups.fulfilled, (state, action) => {
+        state.publicGroups = action.payload;
+      })
       // Create Group
+      .addCase(createGroup.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
       .addCase(createGroup.fulfilled, (state, action) => {
+        state.isLoading = false;
         state.groups.push(action.payload);
       })
-      // Invite to Group
-      .addCase(inviteToGroup.fulfilled, (state, action) => {
-        state.invites.push(action.payload);
+      .addCase(createGroup.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || 'Failed to create group';
       })
-      // Respond to Invite
-      .addCase(respondToInvite.fulfilled, (state, action) => {
-        state.invites = state.invites.filter(i => i.id !== action.payload.inviteId);
+      // Join Group
+      .addCase(joinGroup.fulfilled, (state, action) => {
+        // Group listesini yenile
       })
-      // Complete Group Habit
-      .addCase(completeGroupHabit.fulfilled, (state, action) => {
-        const group = state.groups.find(g => g.id === action.payload.groupId);
-        if (group) {
-          const member = group.members.find(m => m.userId === action.payload.userId);
-          if (member) {
-            member.lastCompleted = new Date().toISOString().split('T')[0];
-          }
-          if (action.payload.allCompleted) {
-            group.currentStreak = action.payload.newStreak;
-            group.lastCompletedDate = new Date().toISOString().split('T')[0];
-          }
-        }
+      // Leave Group
+      .addCase(leaveGroup.fulfilled, (state, action) => {
+        // Grup listesinden kaldır çünkü artık aktif üye değil
+        state.groups = state.groups.filter(g => g.id !== action.payload.groupId);
+        // Üyelik listesini güncelle
+        state.userMemberships = state.userMemberships.filter(m => 
+          !(m.group_id === action.payload.groupId && m.user_id === action.payload.userId)
+        );
       });
   },
 });
