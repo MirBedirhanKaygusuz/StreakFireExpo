@@ -1,5 +1,15 @@
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/supabase';
+import { mockAuthService } from './mockAuth';
+
+// Check if we're using mock/placeholder Supabase credentials
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+const isUsingMock =
+  supabaseUrl.includes('your-project') ||
+  supabaseUrl.includes('placeholder') ||
+  supabaseKey.includes('your_anon_key') ||
+  supabaseKey.includes('placeholder');
 
 export interface User {
   id: string;
@@ -29,7 +39,7 @@ export interface UserProfile {
   privacy_settings: any;
 }
 
-export const authService = {
+const realAuthService = {
   async signUp(email: string, password: string, displayName: string) {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -157,7 +167,7 @@ export const authService = {
   onAuthStateChange(callback: (user: User | null) => void) {
     return supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        const user = await authService.getCurrentUser();
+        const user = await realAuthService.getCurrentUser();
         callback(user);
       } else {
         callback(null);
@@ -165,3 +175,16 @@ export const authService = {
     });
   },
 };
+
+// Export the appropriate auth service based on environment
+export const activeAuthService = isUsingMock ? mockAuthService : realAuthService;
+
+// Log which service is being used
+if (isUsingMock) {
+  console.log('🔧 Using MOCK authentication service (no Supabase connection)');
+} else {
+  console.log('✅ Using real Supabase authentication');
+}
+
+// Re-export under the original name for backward compatibility
+export { activeAuthService as authService };

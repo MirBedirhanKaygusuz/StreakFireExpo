@@ -1,8 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'placeholder_key';
+
+// Check if we're using placeholder values
+const isUsingPlaceholder =
+  supabaseUrl.includes('your-project') ||
+  supabaseUrl.includes('placeholder') ||
+  supabaseAnonKey.includes('your_anon_key') ||
+  supabaseAnonKey.includes('placeholder');
+
+if (isUsingPlaceholder) {
+  console.warn('⚠️ Using placeholder Supabase credentials. Please update .env file with real values.');
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
